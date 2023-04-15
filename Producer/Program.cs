@@ -13,15 +13,22 @@ internal class Program
         using IConnection connection = connectionFactory.CreateConnection();
         using var channel = connection.CreateModel();
 
-        string queueName = "hello_rabbit_mq";
-        channel.QueueDeclare(queueName, true, false, false);
-
+        #region Queue Decleration
+        //string queueName = "hello_rabbit_mq";
+        //channel.QueueDeclare(queueName, true, false, false);
+        #endregion
+        //
+        #region Fanout Exchange Decleration
+        channel.ExchangeDeclare("logs.Fanout", ExchangeType.Fanout, true);
+        #endregion
+        //
         var message = Console.ReadLine();
 
         Enumerable.Range(1, 60).ToList().ForEach(x =>
         {
             var messageBytes = Encoding.UTF8.GetBytes(message + $"{x}");
-            channel.BasicPublish(string.Empty, queueName, null, messageBytes);
+
+            channel.BasicPublish("logs.Fanout", string.Empty, null, messageBytes);
         });
     }
 }

@@ -16,8 +16,9 @@ internal class Program
 
         channel.BasicQos(0, 20, false);
 
-        string queueName = "hello_rabbit_mq";
-        channel.QueueDeclare(queueName, true, false, false);
+        string queueName = channel.QueueDeclare().QueueName;
+        channel.QueueBind(queueName, "logs.Fanout", string.Empty);
+
 
         var consumer = new EventingBasicConsumer(channel);
 
