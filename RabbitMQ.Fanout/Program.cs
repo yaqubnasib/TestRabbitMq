@@ -1,6 +1,4 @@
-﻿using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System.Text;
+﻿using System.Text;
 
 internal class Program
 {
@@ -18,7 +16,7 @@ internal class Program
 
         string queueName = channel.QueueDeclare().QueueName;
         channel.QueueBind(queueName, "logs.Fanout", string.Empty);
-
+        Console.WriteLine("Waiting for log!");
 
         var consumer = new EventingBasicConsumer(channel);
 
