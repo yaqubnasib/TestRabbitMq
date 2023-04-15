@@ -24,7 +24,7 @@ internal class Program
         //
         var message = Console.ReadLine();
 
-        Enumerable.Range(1, 60).ToList().ForEach(x =>
+        Enumerable.Range(1, 5).ToList().ForEach(x =>
         {
             var messageBytes = Encoding.UTF8.GetBytes(message + $"{x}");
 
