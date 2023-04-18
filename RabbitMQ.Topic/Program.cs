@@ -14,23 +14,29 @@ internal class Program
         using IConnection connection = connectionFactory.CreateConnection();
         using IModel channel = connection.CreateModel();
 
-        channel.BasicQos(0, 20, false);
+        channel.ExchangeDeclare("weather", ExchangeType.Topic);
+        var queueName = channel.QueueDeclare().QueueName;
 
-        string queueName = "hello_rabbit_mq";
-        channel.QueueDeclare(queueName, true, false, false);
+        Console.WriteLine("Enter binding keys (e.g. 'City.WeatherType', '*.sunny', 'City.*'): ");
+        var bindingKeys = Console.ReadLine().Split(' ');
+
+        foreach (var bindingKey in bindingKeys)
+        {
+            channel.QueueBind(queue: queueName, exchange: "weather", routingKey: bindingKey);
+        }
 
         var consumer = new EventingBasicConsumer(channel);
-
-        consumer.Received += (sender, deliveryEventsarg) =>
+        consumer.Received += (model, ea) =>
         {
-            var messageBody = deliveryEventsarg.Body.ToArray();
-            Thread.Sleep(2500);
-
-            Console.WriteLine($"Message: {Encoding.UTF8.GetString(messageBody)}");
-            channel.BasicAck(deliveryEventsarg.DeliveryTag, false);
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+            var routingKey = ea.RoutingKey;
+            Console.WriteLine($"Received weather update: '{message}' with routing key: '{routingKey}'");
         };
 
-        channel.BasicConsume(queueName, false, consumer);
-        Console.ReadLine(); Console.WriteLine("Hello, World!");
+        channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+
+        Console.WriteLine("Press [enter] to exit.");
+        Console.ReadLine();
     }
 }

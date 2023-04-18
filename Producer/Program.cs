@@ -3,6 +3,13 @@ using System.Text;
 
 internal class Program
 {
+    public enum LogNames
+    {
+        Critical = 1,
+        Error = 2,
+        Warning = 3,
+        Info = 4,
+    }
     public static void Main(string[] args)
     {
         ConnectionFactory connectionFactory = new()
@@ -19,16 +26,37 @@ internal class Program
         #endregion
         //
         #region Fanout Exchange Decleration
-        channel.ExchangeDeclare("logs.Fanout", ExchangeType.Fanout, true);
+        //channel.ExchangeDeclare("logs.Fanout", ExchangeType.Fanout, true);
+
+        //Console.WriteLine("Enter weather updates as 'City.WeatherType': ");
+
+        //var message = Console.ReadLine();
+
+        //Enumerable.Range(1, 5).ToList().ForEach(x =>
+        //{
+        //    var messageBytes = Encoding.UTF8.GetBytes(message + $"{x}");
+
+        //    channel.BasicPublish("logs.Fanout", string.Empty, null, messageBytes);
+        //});
         #endregion
         //
-        var message = Console.ReadLine();
+        #region Topic Exhcange Decleration 
+        channel.ExchangeDeclare("news", ExchangeType.Topic, false, false);
 
-        Enumerable.Range(1, 5).ToList().ForEach(x =>
+        Console.WriteLine("Enter weather updates as 'City.WeatherType': ");
+
+        while (true)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(message + $"{x}");
+            var routingKey = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(routingKey)) break;
 
-            channel.BasicPublish("logs.Fanout", string.Empty, null, messageBytes);
-        });
+            var body = Encoding.UTF8.GetBytes(routingKey);
+            channel.BasicPublish("weather", routingKey, null, body);
+            Console.WriteLine($"Sent weather update: {routingKey}");
+        }
+
+        #endregion
+
+
     }
 }
